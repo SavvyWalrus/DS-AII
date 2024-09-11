@@ -14,6 +14,7 @@ class PasswordManager {
     private:
         string key = "jones";
         int passwordLength = 9;
+        string vigenereCypher(string tempRawPassword);
 };
 
 #endif
