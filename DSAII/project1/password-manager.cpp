@@ -10,6 +10,7 @@ using namespace std;
 PasswordManager::PasswordManager() {
     generateRawData();
     encryptPasswords();
+    buildHashTables();
 }
 
 void PasswordManager::generateRawData() {
@@ -40,7 +41,7 @@ void PasswordManager::generateRawData() {
 }
 
 void PasswordManager::encryptPasswords() {
-    ofstream encryptedData;
+    ofstream encrypteddata;
     ifstream rawdata;
     string tempRawLine;
     string tempUserID;
@@ -48,7 +49,7 @@ void PasswordManager::encryptPasswords() {
     string encryptedPassword;
 
     rawdata.open("rawdata.txt");
-    encryptedData.open("encrypteddata.txt");
+    encrypteddata.open("encrypteddata.txt");
 
     while (getline(rawdata, tempRawLine)) {
         istringstream buffer(tempRawLine);
@@ -57,11 +58,11 @@ void PasswordManager::encryptPasswords() {
 
         encryptedPassword = vigenereCypher(tempRawPassword);
 
-        encryptedData << left << setw(15) << tempUserID << " " << encryptedPassword << endl;
+        encrypteddata << left << setw(15) << tempUserID << " " << encryptedPassword << endl;
     }
 
     rawdata.close();
-    encryptedData.close();
+    encrypteddata.close();
 }
 
 string PasswordManager::vigenereCypher(string tempRawPassword) {
@@ -84,4 +85,52 @@ string PasswordManager::vigenereCypher(string tempRawPassword) {
     }
 
     return encryptedPassword;
+}
+
+void PasswordManager::buildHashTables() {
+    ifstream myfile;
+    string tempLine;
+    string userID;
+    string password;
+
+    myfile.open("encrypteddata.txt");
+
+    while (getline(myfile, tempLine)) {
+        istringstream buffer(tempLine);
+        buffer >> userID >> password;
+        encryptedHash.insert(userID, password);
+    }
+
+    myfile.close();
+}
+
+void PasswordManager::testLegalPasswords() {
+    int currentLine = -1;
+    int testIndeces[5] = {0, 2, 4, 6, 8};
+    ifstream rawdata;
+    string userID;
+    string filePassword;
+    string encryptedFilePassword;
+    string hashPassword;
+    string tempLine;
+
+    cout << "Legal:\n" << endl;
+    cout << left << setw(15) << "Userid" << " Password(file)" << " Password(table/un)" << " Result" << endl;
+
+    rawdata.open("rawdata.txt");
+
+    for (auto& index: testIndeces) {
+        do {
+            getline(rawdata, tempLine);
+            istringstream buffer(tempLine);
+
+            buffer >> userID >> filePassword;
+            ++currentLine;
+        } while (currentLine != index);
+
+        hashPassword = encryptedHash.search(userID);
+        encryptedFilePassword = vigenereCypher(filePassword);
+
+        cout << left << setw(18) << userID << setw(16) << encryptedFilePassword << setw(15) << hashPassword << " " << (encryptedFilePassword == hashPassword ? "match" : "no match") << endl;
+    }
 }

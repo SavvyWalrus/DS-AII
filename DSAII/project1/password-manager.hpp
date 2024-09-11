@@ -1,6 +1,7 @@
 #ifndef PASSWORD_MANAGER
 #define PASSWORD_MANAGER
 
+#include "hash-table.hpp"
 #include <string>
 using namespace std;
 
@@ -9,12 +10,15 @@ class PasswordManager {
         PasswordManager();
         void generateRawData();
         void encryptPasswords();
-        string testLegalPasswords();
-        string testIllegalPasswords();
+        void buildHashTables();
+        void testLegalPasswords();
+        void testIllegalPasswords();
     private:
         string key = "jones";
         int passwordLength = 9;
         string vigenereCypher(string tempRawPassword);
+        HashTable rawHash;
+        HashTable encryptedHash;
 };
 
 #endif

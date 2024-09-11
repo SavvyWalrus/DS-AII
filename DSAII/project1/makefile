@@ -8,13 +8,13 @@ CXXFLAGS = -Wall -std=c++11
 EXEC = password_manager
 
 # Source files
-SRCS = main.cpp password-manager.cpp# hash-table.cpp
+SRCS = main.cpp password-manager.cpp hash-table.cpp
 
 # Header files
-HEADERS = password-manager.hpp# hash-table.hpp
+HEADERS = password-manager.hpp hash-table.hpp
 
 # Object files
-OBJS = main.o password-manager.o# hash-table.o
+OBJS = main.o password-manager.o hash-table.o
 
 # Default target to build the executable
 all: $(EXEC)

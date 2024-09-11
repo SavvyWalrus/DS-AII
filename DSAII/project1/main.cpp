@@ -2,6 +2,7 @@
 
 int main() {
     PasswordManager manager;
-
+    manager.testLegalPasswords();
+    
     return 0;
 }
