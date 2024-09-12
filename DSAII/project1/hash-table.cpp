@@ -1,4 +1,5 @@
 #include "./hash-table.hpp"
+#include <utility>
 using namespace std;
 
 // Pushes a pair made from the given userID and password to the proper bucket's linked list
@@ -12,8 +13,12 @@ string HashTable::search(string userID) {
     int bucketNum = hashFunction(userID);
 
     if (!table[bucketNum].empty()) {
-        for (auto const& node: table[bucketNum]) {
-            if (node.first == userID) return node.second;
+        Node* current = table[bucketNum].getHead();
+
+        while (current != nullptr) {
+            pair<string, string> data = current->getData();
+            if (data.first == userID) return data.second;
+            current = current->getNext();
         }
     }
 
