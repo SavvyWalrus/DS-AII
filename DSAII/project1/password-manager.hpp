@@ -10,15 +10,14 @@ class PasswordManager {
         PasswordManager();
         void generateRawData();
         void encryptPasswords();
-        void buildHashTables();
+        void buildHashTable();
         void testLegalPasswords();
         void testIllegalPasswords();
     private:
         string key = "jones";
         int passwordLength = 9;
         string vigenereCypher(string tempRawPassword);
-        HashTable rawHash;
-        HashTable encryptedHash;
+        HashTable encryptedTable;
 };
 
 #endif

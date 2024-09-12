@@ -5,7 +5,7 @@ CXX = g++
 CXXFLAGS = -Wall -std=c++11
 
 # Executable name
-EXEC = password_manager
+EXEC = main
 
 # Source files
 SRCS = main.cpp password-manager.cpp hash-table.cpp
@@ -16,8 +16,8 @@ HEADERS = password-manager.hpp hash-table.hpp
 # Object files
 OBJS = main.o password-manager.o hash-table.o
 
-# Default target to build the executable
-all: $(EXEC)
+# Written text files
+TXT = encrypteddata.txt rawdata.txt
 
 # Rule to build the executable
 $(EXEC): $(OBJS)
@@ -37,4 +37,4 @@ hash-table.o: hash-table.cpp hash-table.hpp
 
 # Clean up object files and the executable
 clean:
-	rm -f $(OBJS) $(EXEC)
+	rm -f $(OBJS) $(EXEC) $(TXT)
