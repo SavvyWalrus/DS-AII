@@ -6,12 +6,17 @@
 
 class PriorityQueue {
     private:
-        Customer* customerEvents[MAX_P_QUEUE_SIZE];
-        int size;
+        Customer* customerEvents[MAX_P_QUEUE_SIZE]; // Array for heap based priority queue
+        int size; // Current heap size
     public:
+        // Default constructor
         PriorityQueue();
+
+        // Getters and Setters
         int getSize();
-        void setSize(int size);
+        // void setSize(int size);
+
+        // Queue functions
         void enqueue(Customer* cust);
         Customer* dequeue();
         Customer* peek();

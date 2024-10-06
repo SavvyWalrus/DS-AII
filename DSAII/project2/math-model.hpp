@@ -3,10 +3,7 @@
 
 class MathModel {
     private:
-        float lambda;
-        float mu;
-        int numServiceChannels;
-
+        // Statistical values
         float idleTime;
         float avgNumPeople;
         float avgTotalTime;
@@ -14,23 +11,22 @@ class MathModel {
         float avgTimeInQueue;
         float utilization;
 
+        // Helper functions for computing statistics
         int computeFactorial(int value);
-        float calcIdleTime();
-        float calcAvgNumPeople();
-        float calcAvgTotalTime();
-        float calcAvgQueueNum();
-        float calcAvgTimeInQueue();
-        float calcUtilization();
+        float calcIdleTime(float lambda, float mu, int numServiceChannels);
+        float calcAvgNumPeople(float lambda, float mu, int numServiceChannels);
+        float calcAvgTotalTime(float lambda);
+        float calcAvgQueueNum(float lambda, float mu);
+        float calcAvgTimeInQueue(float lambda);
+        float calcUtilization(float lambda, float mu, int numServiceChannels);
     public:
+        // Default constructor
         MathModel();
-        MathModel(float lambda, float mu, int numServiceChannels);
-        float getLambda();
-        void setLambda(float value);
-        float getMu();
-        void setMu(float value);
-        int getNumServiceChannels();
-        void setNumServiceChannels(int value);
 
+        // Parameterized constructor
+        MathModel(float lambda, float mu, int numServiceChannels);
+
+        // Getters for precalculated statistical values
         float getIdleTime();
         float getAvgNumPeople();
         float getAvgTotalTime();
@@ -38,7 +34,10 @@ class MathModel {
         float getAvgTimeInQueue();
         float getUtilization();
         
+        // Returns a float representing a random time interval
         float getNextRandomInterval(float avg);
+
+        // Runs the statistical functions with the current variables
         void calculateNewValues(float lambda, float mu, int numServiceChannels);
 };
 

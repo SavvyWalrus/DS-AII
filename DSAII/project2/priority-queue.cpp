@@ -2,13 +2,17 @@
 #include "customer.hpp"
 #include <stdexcept>
 
+PriorityQueue::PriorityQueue() {
+    size = 0;
+}
+
 int PriorityQueue::getSize() {
     return size;
 }
 
-void PriorityQueue::setSize(int size) {
-    if (size <= MAX_P_QUEUE_SIZE) this->size = size;
-}
+// void PriorityQueue::setSize(int size) {
+//     if (size <= MAX_P_QUEUE_SIZE) this->size = size;
+// }
 
 void PriorityQueue::enqueue(Customer* cust) {
     if (size >= MAX_P_QUEUE_SIZE) {
@@ -80,8 +84,4 @@ Customer* PriorityQueue::peek() {
     if (size <= 0) return nullptr;
 
     return customerEvents[0];
-}
-
-PriorityQueue::PriorityQueue() {
-    size = 0;
 }

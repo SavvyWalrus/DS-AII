@@ -2,28 +2,17 @@
 #include <stdexcept>
 #include <cmath>
 
-float MathModel::getLambda() {
-    return lambda;
+MathModel::MathModel(float lambda, float mu, int numServiceChannels) {
+    calculateNewValues(lambda, mu, numServiceChannels);
 }
 
-void MathModel::setLambda(float value) {
-    this->lambda = value;
-}
-
-float MathModel::getMu() {
-    return mu;
-}
-
-void MathModel::setMu(float value) {
-    this->mu = value;
-}
-
-int MathModel::getNumServiceChannels() {
-    return numServiceChannels;
-}
-
-void MathModel::setNumServiceChannels(int value) {
-    this->numServiceChannels = value;
+MathModel::MathModel() {
+    idleTime = -1.0;
+    avgNumPeople = -1.0;
+    avgTotalTime = -1.0;
+    avgQueueNum = -1.0;
+    avgTimeInQueue = -1.0;
+    utilization = -1.0;
 }
 
 int MathModel::computeFactorial(int value) {
@@ -40,7 +29,7 @@ int MathModel::computeFactorial(int value) {
     return sum;
 }
 
-float MathModel::calcIdleTime() {
+float MathModel::calcIdleTime(float lambda, float mu, int numServiceChannels) {
     float summation = 0;
     float a, b, c;
 
@@ -59,7 +48,7 @@ float MathModel::calcIdleTime() {
     return (1.0 / summation);
 }
 
-float MathModel::calcAvgNumPeople() {
+float MathModel::calcAvgNumPeople(float lambda, float mu, int numServiceChannels) {
     float numerator, denominator, result;
 
     numerator = lambda * mu * (pow((lambda / mu), numServiceChannels));
@@ -70,33 +59,29 @@ float MathModel::calcAvgNumPeople() {
     return result;
 }
 
-float MathModel::calcAvgTotalTime() {
+float MathModel::calcAvgTotalTime(float lambda) {
     return (avgNumPeople / lambda);
 }
 
-float MathModel::calcAvgQueueNum() {
+float MathModel::calcAvgQueueNum(float lambda, float mu) {
     return (avgNumPeople - (lambda / mu));
 }
 
-float MathModel::calcAvgTimeInQueue() {
+float MathModel::calcAvgTimeInQueue(float lambda) {
     return (avgQueueNum / lambda);
 }
 
-float MathModel::calcUtilization() {
+float MathModel::calcUtilization(float lambda, float mu, int numServiceChannels) {
     return (lambda / (numServiceChannels * mu));
 }
 
 void MathModel::calculateNewValues(float lambda, float mu, int numServiceChannels) {
-    this->lambda = lambda;
-    this->mu = mu;
-    this->numServiceChannels = numServiceChannels;
-
-    idleTime = calcIdleTime();
-    avgNumPeople = calcAvgNumPeople();
-    avgTotalTime = calcAvgTotalTime();
-    avgQueueNum = calcAvgQueueNum();
-    avgTimeInQueue = calcAvgTimeInQueue();
-    utilization = calcUtilization();
+    idleTime = calcIdleTime(lambda, mu, numServiceChannels);
+    avgNumPeople = calcAvgNumPeople(lambda, mu, numServiceChannels);
+    avgTotalTime = calcAvgTotalTime(lambda);
+    avgQueueNum = calcAvgQueueNum(lambda, mu);
+    avgTimeInQueue = calcAvgTimeInQueue(lambda);
+    utilization = calcUtilization(lambda, mu, numServiceChannels);
 }
 
 float MathModel::getIdleTime() {
@@ -133,14 +118,4 @@ float MathModel::getNextRandomInterval(float avg) {
 
     float intervalTime = -1 * (1.0 / avg) * log(f);
     return intervalTime;
-}
-
-MathModel::MathModel(float lambda, float mu, int numServiceChannels) {
-    calculateNewValues(lambda, mu, numServiceChannels);
-}
-
-MathModel::MathModel() {
-    setLambda(0);
-    setMu(0);
-    setNumServiceChannels(0);
 }

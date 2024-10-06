@@ -1,5 +1,18 @@
 #include "./fifo-queue.hpp"
 
+FIFOQueue::FIFOQueue() {
+    this->front = nullptr;
+    this->back = nullptr;
+}
+
+FIFOQueue::~FIFOQueue() {
+    while(front != nullptr) {
+        Customer* temp = front;
+        front = front->getNext();
+        delete temp;
+    }
+}
+
 Customer* FIFOQueue::getFront() {
     return front;
 }
@@ -46,17 +59,4 @@ void FIFOQueue::enqueue(Customer* cust) {
     }
 
     ++size;
-}
-
-FIFOQueue::FIFOQueue() {
-    this->front = nullptr;
-    this->back = nullptr;
-}
-
-FIFOQueue::~FIFOQueue() {
-    while(front != nullptr) {
-        Customer* temp = front;
-        front = front->getNext();
-        delete temp;
-    }
 }

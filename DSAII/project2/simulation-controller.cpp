@@ -1,10 +1,18 @@
 #include "./simulation-controller.hpp"
 #include "customer.hpp"
+#include "math-model.hpp"
 #include "priority-queue.hpp"
 #include <fstream>
 #include <iostream>
 #include <iomanip>
 #include <stdexcept>
+
+SimulationController::SimulationController() {
+    model = MathModel();
+    fQueue = FIFOQueue();
+    pQueue = PriorityQueue();
+    clearVariables();
+}
 
 void SimulationController::clearVariables() {
     currTime = 0.0;
@@ -19,22 +27,19 @@ void SimulationController::clearVariables() {
     totalCustomerTimeInQueue = 0.0;
 }
 
-SimulationController::SimulationController() {
-    model = MathModel();
-    fQueue = FIFOQueue();
-    pQueue = PriorityQueue();
-    clearVariables();
-}
-
 void SimulationController::loadModel(std::string filename) {
+    // Sets up file stream
     std::ifstream file = std::ifstream(filename);
 
-    file >> lambda >> mu >> numServiceChannels >> eventsToSimulate;
+    // Extracts values from the file stream into the relevant variables
+    file >> lambda >> mu >> numServiceChannels >> numCustomersToGenerate;
 
+    // Runs statistical calculations from the given values
     model.calculateNewValues(lambda, mu, numServiceChannels);
 }
 
 void SimulationController::processStatistics(Customer* cust) {
+    // Calculates how long the current customer spent waiting in the fifo queue
     float currWaitTime = cust->getStartOfServiceTime() - cust->getArrivalTime();
 
     if (currWaitTime != 0) {
@@ -42,8 +47,10 @@ void SimulationController::processStatistics(Customer* cust) {
         totalWaitTime += currWaitTime;
     }
 
+    // Calculates how long the current customer spent in a service channel
     totalServiceTime += cust->getDepartureTime() - cust->getStartOfServiceTime();
 
+    // Checks if system is idle and calculates idle time
     if (serverAvailableCnt == numServiceChannels && pQueue.getSize() > 0) {
         idleTime += pQueue.peek()->getEventTime() - cust->getDepartureTime();
     }
@@ -59,11 +66,11 @@ void SimulationController::printStatistics() {
     int labelWidth = 58;  // Width for the statistic labels
     int valueWidth = 10;  // Width for the statistic values
 
-    std::cout << std::left << std::setw(labelWidth - 2) << std::setfill(' ') << std::left << "\nStatistic type" << std::right << std::setw(valueWidth) << "Actual : Model prediction\n" <<
-                std::setw(80) << std::setfill('-') << "" << std::endl;
-
-    std::cout << std::setfill(' ');
-
+    // Table output ; One cout per line
+    std::cout << std::left << std::setw(labelWidth - 2) << std::setfill(' ') << std::left << "\nStatistic type" << std::right << std::setw(valueWidth) << "Actual : Model prediction" << std::endl;
+    
+    std::cout << std::setw(80) << std::setfill('-') << "" << std::endl << std::setfill(' ');
+    
     std::cout << std::left << std::setw(labelWidth - 1) << std::left << std::fixed << std::setprecision(5) << "Percentage idle time: "
                 << std::right << std::setw(valueWidth) << idleTime / lastDepartureTime * 100 << "% : " << model.getIdleTime() * 100 << "%" << std::endl;
     
@@ -87,17 +94,25 @@ void SimulationController::printStatistics() {
 }
 
 void SimulationController::addArrivals() {
+    // Generates future arrival events as long as the priority queue has space
     for (int i = pQueue.getSize(); i < MAX_P_QUEUE_SIZE; ++i) {
-        if (eventsToSimulate <= 0) break;
+        if (numCustomersToGenerate <= 0) break; // Breaks when all customers have been generated
+
+        // New customer instance
         Customer* cust = new Customer();
 
+        // Sets values for arrival event
         cust->setArrivalTime(nextArrivalTime);
         cust->setEventStatus(ARRIVAL);
 
+        // Schedules the arrival event
         pQueue.enqueue(cust);
+
+        // Calculates and stores the next interval
         nextArrivalTime += model.getNextRandomInterval(lambda);
 
-        --eventsToSimulate;
+        // Decrements the number of customers to generate
+        --numCustomersToGenerate;
     }
 }
 
@@ -107,6 +122,9 @@ void SimulationController::processNextEvent() {
 
     // Calculate time since the last event
     float timeSincePrevEvent = cust->getEventTime() - currTime;
+
+    // Update the current time to the time of this event
+    currTime = cust->getEventTime();
 
     // Total number of customers in the system
     int customersInSystem = (numServiceChannels - serverAvailableCnt) + fQueue.getSize();
@@ -119,9 +137,6 @@ void SimulationController::processNextEvent() {
 
     // Update total time-weighted number of customers in the queue
     totalCustomerTimeInQueue += customersInQueue * timeSincePrevEvent;
-
-    // Update the current time to the time of this event
-    currTime = cust->getEventTime();
 
     if (cust->getEventStatus() == ARRIVAL) {
         if (serverAvailableCnt > 0) {
@@ -167,8 +182,7 @@ void SimulationController::processNextEvent() {
         }
         
         // Records the final departure time
-        // Slightly inefficient since it will run multiple times in the last batch of arrivals
-        if (eventsToSimulate <= 0) {
+        if (numCustomersToGenerate <= 0 && pQueue.getSize() <= 0) {
             lastDepartureTime = cust->getDepartureTime();
         }
     } else {
@@ -180,14 +194,13 @@ void SimulationController::runSimulation(std::string filename) {
     std::cout << "Running " << filename << " simulation..." << std::endl;
 
     loadModel(filename);
-
     addArrivals();
     serverAvailableCnt = numServiceChannels;
 
     while (pQueue.getSize() > 0) {
         processNextEvent();
 
-        if (eventsToSimulate > 0 && pQueue.getSize() <= numServiceChannels + 1) {
+        if (numCustomersToGenerate > 0 && pQueue.getSize() <= numServiceChannels + 1) {
             addArrivals();
         }
     }
@@ -195,6 +208,5 @@ void SimulationController::runSimulation(std::string filename) {
     std::cout << "Simulation complete. Printing results..." << std::endl;
 
     printStatistics();
-
     clearVariables();
 }
