@@ -1,3 +1,7 @@
 # Ignore all link files
 *.o
+
+# Ignore all zip files
+*.zip
+
 DSAII/project2/sim
