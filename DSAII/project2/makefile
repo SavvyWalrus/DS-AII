@@ -7,9 +7,6 @@ RM=rm -rf
 sim: main.o simulation-controller.o math-model.o priority-queue.o fifo-queue.o customer.o
 	$(CXX) -o $@ $^
 
-test: unit-test.o math-model.o customer.o
-	$(CXX) -o $@ $^
-
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $<
 

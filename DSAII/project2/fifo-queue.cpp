@@ -3,6 +3,7 @@
 FIFOQueue::FIFOQueue() {
     this->front = nullptr;
     this->back = nullptr;
+    size = 0;
 }
 
 FIFOQueue::~FIFOQueue() {
@@ -38,7 +39,7 @@ void FIFOQueue::setSize(int size) {
 }
 
 Customer* FIFOQueue::dequeue() {
-    if (front == nullptr) return nullptr;
+    if (size == 0) return nullptr;
 
     Customer* temp = front;
 

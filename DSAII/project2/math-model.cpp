@@ -2,7 +2,7 @@
 #include <stdexcept>
 #include <cmath>
 
-MathModel::MathModel(float lambda, float mu, int numServiceChannels) {
+MathModel::MathModel(float lambda, float mu, float numServiceChannels) {
     calculateNewValues(lambda, mu, numServiceChannels);
 }
 
@@ -29,7 +29,7 @@ int MathModel::computeFactorial(int value) {
     return sum;
 }
 
-float MathModel::calcIdleTime(float lambda, float mu, int numServiceChannels) {
+float MathModel::calcIdleTime(float lambda, float mu, float numServiceChannels) {
     float summation = 0;
     float a, b, c;
 
@@ -48,7 +48,7 @@ float MathModel::calcIdleTime(float lambda, float mu, int numServiceChannels) {
     return (1.0 / summation);
 }
 
-float MathModel::calcAvgNumPeople(float lambda, float mu, int numServiceChannels) {
+float MathModel::calcAvgNumPeople(float lambda, float mu, float numServiceChannels) {
     float numerator, denominator, result;
 
     numerator = lambda * mu * (pow((lambda / mu), numServiceChannels));
@@ -71,11 +71,11 @@ float MathModel::calcAvgTimeInQueue(float lambda) {
     return (avgQueueNum / lambda);
 }
 
-float MathModel::calcUtilization(float lambda, float mu, int numServiceChannels) {
+float MathModel::calcUtilization(float lambda, float mu, float numServiceChannels) {
     return (lambda / (numServiceChannels * mu));
 }
 
-void MathModel::calculateNewValues(float lambda, float mu, int numServiceChannels) {
+void MathModel::calculateNewValues(float lambda, float mu, float numServiceChannels) {
     idleTime = calcIdleTime(lambda, mu, numServiceChannels);
     avgNumPeople = calcAvgNumPeople(lambda, mu, numServiceChannels);
     avgTotalTime = calcAvgTotalTime(lambda);

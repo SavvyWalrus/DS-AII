@@ -19,7 +19,7 @@ class SimulationController {
         // Main statistical variables for model predictions
         float lambda;
         float mu;
-        int numServiceChannels;
+        float numServiceChannels;
 
         // Helper variables
         int numCustomersToGenerate;

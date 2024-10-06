@@ -15,6 +15,11 @@ SimulationController::SimulationController() {
 }
 
 void SimulationController::clearVariables() {
+    lambda = 0.0;
+    mu = 0.0;
+    numServiceChannels = 0;
+    numCustomersToGenerate = 0;
+    serverAvailableCnt = 0;
     currTime = 0.0;
     nextArrivalTime = 0.0;
     customerWaitedCnt = 0;
@@ -42,7 +47,7 @@ void SimulationController::processStatistics(Customer* cust) {
     // Calculates how long the current customer spent waiting in the fifo queue
     float currWaitTime = cust->getStartOfServiceTime() - cust->getArrivalTime();
 
-    if (currWaitTime != 0) {
+    if (currWaitTime != 0.0) {
         ++customerWaitedCnt;
         totalWaitTime += currWaitTime;
     }
@@ -66,27 +71,43 @@ void SimulationController::printStatistics() {
     int labelWidth = 58;  // Width for the statistic labels
     int valueWidth = 10;  // Width for the statistic values
 
-    // Table output ; One cout per line
+    // Variable output
+    std::cout << std::fixed << std::setprecision(6) << std::endl;
+    std::cout << "Variables" << std::endl;
+    std::cout << std::setw(30) << std::setfill('-') << "" << std::endl << std::setfill(' ');
+    std::cout << "λ: " << lambda << std::endl;
+    std::cout << "μ: " << mu << std::endl;
+    std::cout << "M: " << numServiceChannels << std::endl;
+    std::cout << "events: " << customersProcessed << std::endl;
+    std::cout << "numCustomers: " << customersProcessed << std::endl;
+    std::cout << "eventCount: " << customersProcessed * 2 << std::endl;
+    std::cout << "customerWaitedCount: " << customerWaitedCnt << std::endl;
+    std::cout << "totalWaitTime: " << totalWaitTime << std::endl;
+    std::cout << "totalServiceTime: " << totalServiceTime << std::endl;
+    std::cout << "totalIdleTime: " << idleTime << std::endl;
+    std::cout << "currentTime: " << lastDepartureTime << std::endl;
+
+    // Statistic table output ; One cout per line
     std::cout << std::left << std::setw(labelWidth - 2) << std::setfill(' ') << std::left << "\nStatistic type" << std::right << std::setw(valueWidth) << "Actual : Model prediction" << std::endl;
     
     std::cout << std::setw(80) << std::setfill('-') << "" << std::endl << std::setfill(' ');
     
-    std::cout << std::left << std::setw(labelWidth - 1) << std::left << std::fixed << std::setprecision(5) << "Percentage idle time: "
+    std::cout << std::left << std::setw(labelWidth - 1) << std::left << std::setprecision(5) << "Percentage idle time (P0)"
                 << std::right << std::setw(valueWidth) << idleTime / lastDepartureTime * 100 << "% : " << model.getIdleTime() * 100 << "%" << std::endl;
     
-    std::cout << std::left << std::setw(labelWidth) << std::left << std::setprecision(6) << "Average number of customers in the system "
+    std::cout << std::left << std::setw(labelWidth) << std::left << std::setprecision(6) << "Average number of customers in the system (L)"
                 << std::right << std::setw(valueWidth) << totalCustomerTimeInSystem / lastDepartureTime << " : " << model.getAvgNumPeople() << std::endl;
     
-    std::cout << std::left << std::setw(labelWidth) << std::left << "Average time spent in the system by a customer "
+    std::cout << std::left << std::setw(labelWidth) << std::left << "Average time spent in the system by a customer (W)"
                 << std::right << std::setw(valueWidth) << totalCustomerTimeInSystem / customersProcessed << " : " << model.getAvgTotalTime() << std::endl;
     
-    std::cout << std::left << std::setw(labelWidth) << std::left << "Average number of customers in the queue "
+    std::cout << std::left << std::setw(labelWidth) << std::left << "Average number of customers in the queue (Lq)"
                 << std::right << std::setw(valueWidth) << totalCustomerTimeInQueue / lastDepartureTime << " : " << model.getAvgQueueNum() << std::endl;
     
-    std::cout << std::left << std::setw(labelWidth) << std::left << "Average time spent waiting in the queue "
+    std::cout << std::left << std::setw(labelWidth) << std::left << "Average time spent waiting in the queue (Wq)"
                 << std::right << std::setw(valueWidth) << totalWaitTime / customersProcessed << " : " << model.getAvgTimeInQueue() << std::endl;
     
-    std::cout << std::left << std::setw(labelWidth) << std::left << "Utilization factor "
+    std::cout << std::left << std::setw(labelWidth + 1) << std::left << "Utilization factor (ρ)"
                 << std::right << std::setw(valueWidth) << utilizationFactor << " : " << model.getUtilization() << std::endl;
     
     std::cout << std::left << std::setw(labelWidth - 1) << std::left << std::setprecision(5) << "Probability of waiting for service "
@@ -144,9 +165,9 @@ void SimulationController::processNextEvent() {
             --serverAvailableCnt;
 
             // Set service start time and calculated departure time
-            cust->setStartOfServiceTime(cust->getArrivalTime());
+            cust->setStartOfServiceTime(currTime);
             float departureInterval = model.getNextRandomInterval(mu);
-            cust->setDepartureTime(cust->getArrivalTime() + departureInterval);
+            cust->setDepartureTime(cust->getStartOfServiceTime() + departureInterval);
 
             // Sets the future event status to departure
             cust->setEventStatus(DEPARTURE);
@@ -161,15 +182,16 @@ void SimulationController::processNextEvent() {
         ++serverAvailableCnt;
 
         processStatistics(cust);
+        delete cust;
 
         if (fQueue.getFront() != nullptr) {
             // Next customer from fifo queue
             Customer* temp = fQueue.dequeue();
 
             // Set service start time and calculated departure time
-            temp->setStartOfServiceTime(cust->getDepartureTime());
+            temp->setStartOfServiceTime(currTime);
             float departureInterval = model.getNextRandomInterval(mu);
-            temp->setDepartureTime(temp->getArrivalTime() + departureInterval);
+            temp->setDepartureTime(currTime + departureInterval);
 
             // Sets the future event status to departure
             temp->setEventStatus(DEPARTURE);
@@ -183,7 +205,7 @@ void SimulationController::processNextEvent() {
         
         // Records the final departure time
         if (numCustomersToGenerate <= 0 && pQueue.getSize() <= 0) {
-            lastDepartureTime = cust->getDepartureTime();
+            lastDepartureTime = currTime;
         }
     } else {
         throw std::runtime_error("Invalid Event Flag");

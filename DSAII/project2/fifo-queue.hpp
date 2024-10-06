@@ -9,7 +9,7 @@ class FIFOQueue {
         Customer* back;
 
         // Current size
-        int size = 0;
+        int size;
     public:
         // Default constructor
         FIFOQueue();
