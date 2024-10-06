@@ -92,7 +92,7 @@ void SimulationController::printStatistics() {
     
     std::cout << std::setw(80) << std::setfill('-') << "" << std::endl << std::setfill(' ');
     
-    std::cout << std::left << std::setw(labelWidth - 1) << std::left << std::setprecision(5) << "Percentage idle time (P0)"
+    std::cout << std::left << std::setw(labelWidth + 1) << std::left << std::setprecision(5) << "Percentage idle time (P\u2092)"
                 << std::right << std::setw(valueWidth) << idleTime / lastDepartureTime * 100 << "% : " << model.getIdleTime() * 100 << "%" << std::endl;
     
     std::cout << std::left << std::setw(labelWidth) << std::left << std::setprecision(6) << "Average number of customers in the system (L)"
