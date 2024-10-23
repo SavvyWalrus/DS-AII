@@ -6,12 +6,15 @@ int main() {
 
     std::cout << "Enter the number of cities to run [10-20]: ";
     std::cin >> numCities;
-    // std::cout << "Enter the number of tours per generation: ";
-    // std::cout << "Enter the number of generations to run: ";
-    // std::cout << "Enter the percentage of a generation's mutations (0-100]: ";
+    std::cout << "Enter the number of tours per generation: ";
+    std::cin >> numTours;
+    std::cout << "Enter the number of generations to run: ";
+    std::cin >> numGenerations;
+    std::cout << "Enter the percentage of a generation's mutations (0-100]: ";
+    std::cin >> percentageMutations;
 
 
-    MinDistanceController controller = MinDistanceController(numCities, "./distances.txt");
+    MinDistanceController controller = MinDistanceController(numCities, numTours, numGenerations, percentageMutations, "./distances.txt");
     controller.runCalculations();
 
     return 0;

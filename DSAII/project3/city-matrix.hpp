@@ -7,20 +7,23 @@
 class CityMatrix {
     private:
         int numCities;
+        int successfulCrossovers;
         std::vector<int> currPerm;
-        std::vector<int> basePerm;
         TwoDArray<double> cityWeights;
         void swap(int p, int q, std::vector<int>& s);
     public:
         CityMatrix();
         CityMatrix(int numCities, std::string distancesFile);
         size_t computeFactorial(size_t num);
-        void perm1(std::vector<int>& s);
+        void inrementPermutation(std::vector<int>& s);
+        std::vector<int> getRandomPerm(std::vector<int> s);
+        std::vector<int> mutatePerm(std::vector<int> s);
+        std::vector<int> attemptCrossoverPerm(std::vector<int> s, std::vector<int> currElite);
         void setNumCities(int numCities);
         void printS(std::vector<int> s);
         std::vector<int> getNextPerm();
-        std::vector<int> getBasePerm();
         double getValue(int i, int j);
+        int getSuccessfulCrossovers();
 };
 
 #endif

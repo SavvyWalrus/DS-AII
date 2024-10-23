@@ -8,19 +8,22 @@ class MinDistanceController {
     private:
         CityMatrix cityWeights;
         std::vector<int> elite;
-        std::vector<int> basePermutation;
-        std::vector<int> bestPermutation;
+        std::vector<int> optimalPerm;
         int numCities;
+        int numToursPerGeneration;
+        int generationsToRun;
+        int percentageMutations;
         double optimalCost;
         double geneticCost;
         std::chrono::duration<double> bruteForceTime;
         std::chrono::duration<double> geneticTime;
 
+        double getFitness(std::vector<int> perm);
         void calculateCostBruteForce();
-        // int* calculateCostGenetic();
+        void calculateCostGenetic();
         void displayResults();
     public:
-        MinDistanceController(int numCities, std::string distancesFile);
+        MinDistanceController(int numCities, int numToursPerGeneration, int generationsToRun, int percentageMutations, std::string distancesFile);
         void runCalculations();
 };
 

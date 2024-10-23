@@ -4,4 +4,6 @@
 # Ignore all zip files
 *.zip
 
-DSAII/project2/sim
+# Ignore executable files
+sim
+main

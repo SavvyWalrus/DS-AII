@@ -1,25 +1,27 @@
 #include "./city-matrix.hpp"
 #include "./two-d-array.hpp"
+#include <algorithm>
 #include <cstddef>
+#include <cstdlib>
 #include <fstream>
+#include <vector>
+#include <set>
 
 CityMatrix::CityMatrix()
 : cityWeights(0, 0, 0.0) {
     numCities = 0;
     currPerm = std::vector<int>(0);
-    basePerm = std::vector<int>(0);
 }
 
 CityMatrix::CityMatrix(int numCities, std::string distancesFile) {
     this->numCities = numCities;
+    successfulCrossovers = 0;
     cityWeights = TwoDArray<double>(NUMELEMENTS, NUMELEMENTS, 0.0);
     currPerm = std::vector<int>(numCities);
-    basePerm = std::vector<int>(numCities);
     
     // Assigns city number values for permutation representation
     for (int i = 0; i < numCities; ++i) {
         currPerm[i] = i;
-        basePerm[i] = i;
     }
 
     std::ifstream file(distancesFile);
@@ -66,7 +68,7 @@ size_t CityMatrix::computeFactorial(size_t num) {
     return temp;
 }
 
-void CityMatrix::perm1(std::vector<int>& s) {
+void CityMatrix::inrementPermutation(std::vector<int>& s) {
     int m, k, p , q;
 
     m = numCities-2;
@@ -93,6 +95,58 @@ void CityMatrix::perm1(std::vector<int>& s) {
     // printS(s);
 }
 
+std::vector<int> CityMatrix::getRandomPerm(std::vector<int> s) {
+    std::random_shuffle(s.begin() + 1, s.end());
+    return s;
+}
+
+std::vector<int> CityMatrix::mutatePerm(std::vector<int> s) {
+    if (s.size() <= 2) return s;
+
+    int numMutations = rand() % (numCities / 2);
+    int firstIndex;
+    int secondIndex;
+
+    for (int i = 0; i < numMutations; ++i) {
+        firstIndex = (rand() % (numCities - 1)) + 1;
+        do {
+            secondIndex = (rand() % (numCities - 1)) + 1;
+        } while (secondIndex == firstIndex);
+        swap(firstIndex, secondIndex, s);
+    }
+
+    return s;
+}
+
+std::vector<int> CityMatrix::attemptCrossoverPerm(std::vector<int> s, std::vector<int> currElite) {
+    std::set<int> sHalf;
+    std::set<int> eliteHalf;
+
+    for (int i = 0; i < s.size() / 2; ++i) {
+        sHalf.insert(s[i]);
+        eliteHalf.insert(currElite[i]);
+    }
+
+    if (sHalf != eliteHalf) {
+        return mutatePerm(s);
+    }
+    
+    int randomHalf = rand() % 2;
+
+    if (randomHalf == 0) {
+        for (int i = 0; i < s.size() / 2; ++i) {
+            s[i] = currElite[i];
+        }
+    } else {
+        for (int i = s.size() / 2; i < s.size(); ++i) {
+            s[i] = currElite[i];
+        }
+    }
+
+    ++successfulCrossovers;
+    return s;
+}
+
 void CityMatrix::setNumCities(int numCities) {
     this->numCities = numCities;
 }
@@ -117,7 +171,7 @@ std::vector<int> CityMatrix::getNextPerm() {
         tempPerm[i] = currPerm[i];
     }
 
-    perm1(this->currPerm);
+    inrementPermutation(this->currPerm);
 
     return tempPerm;
 }
@@ -126,6 +180,6 @@ double CityMatrix::getValue(int i, int j) {
     return cityWeights.getValue(i, j);
 }
 
-std::vector<int> CityMatrix::getBasePerm() {
-    return basePerm;
+int CityMatrix::getSuccessfulCrossovers() {
+    return successfulCrossovers;
 }
