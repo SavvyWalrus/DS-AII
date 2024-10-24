@@ -45,6 +45,8 @@ void MinDistanceController::calculateCostGenetic() {
     std::vector<std::vector<int>> currentGeneration;
     elite = cityWeights.getNextPerm();
     geneticCost = getFitness(elite);
+    fitnessCache[elite] = geneticCost;
+
     double tempCost;
     int randomMutation;
 
@@ -54,19 +56,21 @@ void MinDistanceController::calculateCostGenetic() {
     }
 
     while (generationsToRun > 0) {
-        for (auto perm : currentGeneration) {
-            tempCost = getFitness(perm);
-            if (tempCost < geneticCost) {
-                geneticCost = tempCost;
-                elite = perm;
+        for (auto& perm : currentGeneration) {
+            if (fitnessCache.find(perm) == fitnessCache.end()) {
+                tempCost = getFitness(perm);
+                fitnessCache[perm] = tempCost;
+                if (tempCost < geneticCost) {
+                    geneticCost = tempCost;
+                    elite = perm;
+                }
             }
         }
 
-        for (auto perm : currentGeneration) {
+        for (auto& perm : currentGeneration) {
             randomMutation = rand() % 100;
             if (randomMutation < percentageMutations) {
-                perm = elite;
-                cityWeights.mutatePerm(perm);
+                perm = cityWeights.mutatePerm(elite);
             } else {
                 perm = cityWeights.attemptCrossoverPerm(perm, elite);
             }
@@ -95,6 +99,7 @@ double MinDistanceController::getFitness(std::vector<int> perm) {
 }
 
 void MinDistanceController::displayResults() {
+    std::cout << std::endl << std::setw(30) << std::setfill('-') << "" << std::setfill(' ');
     std::cout << "\nRESULTS" << std::endl;
     std::cout << std::setw(30) << std::setfill('-') << "" << std::endl << std::setfill(' ');
 
@@ -103,19 +108,24 @@ void MinDistanceController::displayResults() {
         return;
     }
 
-    std::cout << "Number of cities run: " << numCities << std::endl;
+    std::cout << "Number of cities run: " << numCities << std::endl << std::endl;
     
+    std::cout << "Brute force approach" << std::endl;
+    std::cout << std::setw(20) << std::setfill('-') << "" << std::endl << std::setfill(' ');
     std::cout << "Optimal permutation: ";
     cityWeights.printS(optimalPerm);
     std::cout << "Optimal cost: " << optimalCost << std::endl;
     std::cout << "Brute force algorithm time: " << bruteForceTime.count() << "s\n" << std::endl;
     
+    std::cout << "Genetic algorithm approach" << std::endl;
+    std::cout << std::setw(26) << std::setfill('-') << "" << std::endl << std::setfill(' ');
     std::cout << "Best genetic permutation: ";
     cityWeights.printS(elite);
     std::cout << "Genetic cost: " << geneticCost << std::endl;
     std::cout << "Genetic algorithm time: " << geneticTime.count() << "s" << std::endl;
-    std::cout << "Successful crossovers: " << cityWeights.getSuccessfulCrossovers() << std::endl;
+    // std::cout << "Successful crossovers: " << cityWeights.getSuccessfulCrossovers() << std::endl;
     std::cout << "Percent of optimal cost: " << geneticCost / optimalCost * 100 << "%" << std::endl;
+    std::cout << "Percent of brute force time: " << geneticTime.count() / bruteForceTime.count() * 100 << "%" << std::endl;
 }
 
 void MinDistanceController::runCalculations() {

@@ -122,11 +122,12 @@ std::vector<int> CityMatrix::attemptCrossoverPerm(std::vector<int> s, std::vecto
     std::set<int> sHalf;
     std::set<int> eliteHalf;
 
-    for (int i = 0; i < s.size() / 2; ++i) {
+    for (size_t i = 0; i < s.size() / 2; ++i) {
         sHalf.insert(s[i]);
         eliteHalf.insert(currElite[i]);
     }
 
+    // Performs mutation as backup
     if (sHalf != eliteHalf) {
         return mutatePerm(s);
     }
@@ -134,11 +135,11 @@ std::vector<int> CityMatrix::attemptCrossoverPerm(std::vector<int> s, std::vecto
     int randomHalf = rand() % 2;
 
     if (randomHalf == 0) {
-        for (int i = 0; i < s.size() / 2; ++i) {
+        for (size_t i = 0; i < s.size() / 2; ++i) {
             s[i] = currElite[i];
         }
     } else {
-        for (int i = s.size() / 2; i < s.size(); ++i) {
+        for (size_t i = s.size() / 2; i < s.size(); ++i) {
             s[i] = currElite[i];
         }
     }
