@@ -1,3 +1,10 @@
+/***************************************************************
+  Student Name: Sarah Wallis
+  File Name: min-distance-controller.hpp
+  Assignment number: Project 3
+
+  Controller for both algorithm types and results output
+***************************************************************/
 #ifndef MIN_DISTANCE_CONTROLLER
 #define MIN_DISTANCE_CONTROLLER
 #include "./city-matrix.hpp"
@@ -5,8 +12,11 @@
 #include <unordered_map>
 #include <vector>
 
-// Vector hash function taken from StackOverflow
-// https://stackoverflow.com/questions/20511347/a-good-hash-function-for-a-vector/72073933#72073933
+/**
+Vector hash function taken from StackOverflow
+Used for memoization
+https://stackoverflow.com/questions/20511347/a-good-hash-function-for-a-vector/72073933#72073933
+**/
 struct VectorHash {
     std::size_t operator()(std::vector<int> const& vec) const {
         std::size_t seed = vec.size();
@@ -22,7 +32,7 @@ struct VectorHash {
 
 class MinDistanceController {
     private:
-        CityMatrix cityWeights;
+        CityMatrix cityWeights; // Adjacency matrix
         std::vector<int> elite;
         std::vector<int> optimalPerm;
         int numCities;
@@ -33,11 +43,14 @@ class MinDistanceController {
         double geneticCost;
         std::chrono::duration<double> bruteForceTime;
         std::chrono::duration<double> geneticTime;
+
+        // Used for permutation memoization (Unfortunately slightly slower with number of generations used as the termination condition).
+        // Kept in since it could be optimized, but program works fine with or without it.
         std::unordered_map<std::vector<int>, double, VectorHash> fitnessCache;
 
         double getFitness(std::vector<int> perm);
-        void calculateCostBruteForce();
-        void calculateCostGenetic();
+        void calculateCostBruteForce(); // Brute force algorithm
+        void calculateCostGenetic(); // Genetic algorithm
         void displayResults();
     public:
         MinDistanceController(int numCities, int numToursPerGeneration, int generationsToRun, int percentageMutations, std::string distancesFile);

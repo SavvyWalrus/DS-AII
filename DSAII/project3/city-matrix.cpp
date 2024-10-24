@@ -1,3 +1,10 @@
+/***************************************************************
+  Student Name: Sarah Wallis
+  File Name: city-matrix.cpp
+  Assignment number: Project 3
+
+  Class for managing adjacency matrix and subsidiary algorithmic functions
+***************************************************************/
 #include "./city-matrix.hpp"
 #include "./two-d-array.hpp"
 #include <algorithm>
@@ -19,7 +26,7 @@ CityMatrix::CityMatrix(int numCities, std::string distancesFile) {
     cityWeights = TwoDArray<double>(NUMELEMENTS, NUMELEMENTS, 0.0);
     currPerm = std::vector<int>(numCities);
     
-    // Assigns city number values for permutation representation
+    // Assigns city number values for permutation representation (i.e. 0, 1, 2, 3, etc.)
     for (int i = 0; i < numCities; ++i) {
         currPerm[i] = i;
     }
@@ -35,7 +42,7 @@ CityMatrix::CityMatrix(int numCities, std::string distancesFile) {
 
     for (int i = 0; i < NUMELEMENTS; ++i) {
         for (int j = 0; j < NUMELEMENTS; ++j) {
-            if (i == j) {
+            if (i == j) { // No weight for travelling to self
                 continue;
             } else if (file >> temp) {
                 cityWeights.setValue(i, j, temp);
@@ -56,6 +63,7 @@ void CityMatrix::swap(int p, int q, std::vector<int>& s) {
 }
 
 // For calculating the number of computations
+// Naive implementation but sufficient for this problem and the given range of values [10-20]
 size_t CityMatrix::computeFactorial(size_t num) {
     if (num == 0) return 1;
 
@@ -101,16 +109,16 @@ std::vector<int> CityMatrix::getRandomPerm(std::vector<int> s) {
 }
 
 std::vector<int> CityMatrix::mutatePerm(std::vector<int> s) {
-    if (s.size() <= 2) return s;
+    if (s.size() <= 2) return s; // No need for mutation
 
     int numMutations = rand() % (numCities / 2);
     int firstIndex;
     int secondIndex;
 
     for (int i = 0; i < numMutations; ++i) {
-        firstIndex = (rand() % (numCities - 1)) + 1;
+        firstIndex = (rand() % (numCities - 1)) + 1; // Can't be 0th index
         do {
-            secondIndex = (rand() % (numCities - 1)) + 1;
+            secondIndex = (rand() % (numCities - 1)) + 1; // Can't be 0th index
         } while (secondIndex == firstIndex);
         swap(firstIndex, secondIndex, s);
     }
@@ -119,6 +127,7 @@ std::vector<int> CityMatrix::mutatePerm(std::vector<int> s) {
 }
 
 std::vector<int> CityMatrix::attemptCrossoverPerm(std::vector<int> s, std::vector<int> currElite) {
+    // Sets for ensuring no repeats of cities
     std::set<int> sHalf;
     std::set<int> eliteHalf;
 
@@ -148,10 +157,6 @@ std::vector<int> CityMatrix::attemptCrossoverPerm(std::vector<int> s, std::vecto
     return s;
 }
 
-void CityMatrix::setNumCities(int numCities) {
-    this->numCities = numCities;
-}
-
 void CityMatrix::printS(std::vector<int> s) {
     if (!numCities) {
         std::cerr << "Number of cities has not been initialized!\n";
@@ -166,15 +171,14 @@ void CityMatrix::printS(std::vector<int> s) {
 }
 
 std::vector<int> CityMatrix::getNextPerm() {
-    std::vector<int> tempPerm(numCities);
-
-    for (int i = 0; i < numCities; ++i) {
-        tempPerm[i] = currPerm[i];
-    }
-
+    std::vector<int> tempPerm = currPerm;
     inrementPermutation(this->currPerm);
 
     return tempPerm;
+}
+
+void CityMatrix::setNumCities(int numCities) {
+    this->numCities = numCities;
 }
 
 double CityMatrix::getValue(int i, int j) {

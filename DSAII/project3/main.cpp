@@ -1,3 +1,10 @@
+/***************************************************************
+  Student Name: Sarah Wallis
+  File Name: main.cpp
+  Assignment number: Project 3
+
+  Main function for running program
+***************************************************************/
 #include "./min-distance-controller.hpp"
 #include <iostream>
 

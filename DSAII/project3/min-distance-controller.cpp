@@ -1,3 +1,10 @@
+/***************************************************************
+  Student Name: Sarah Wallis
+  File Name: min-distance-controller.cpp
+  Assignment number: Project 3
+
+  Controller for both algorithm types and results output
+***************************************************************/
 #include "./min-distance-controller.hpp"
 #include <cmath>
 #include <cstddef>
@@ -45,21 +52,22 @@ void MinDistanceController::calculateCostGenetic() {
     std::vector<std::vector<int>> currentGeneration;
     elite = cityWeights.getNextPerm();
     geneticCost = getFitness(elite);
-    fitnessCache[elite] = geneticCost;
-
-    double tempCost;
-    int randomMutation;
+    fitnessCache[elite] = geneticCost; // Memoizes first permutation
 
     // Generate random population for first generation
     for (int i = 0; i < numToursPerGeneration; ++i) {
         currentGeneration.push_back(cityWeights.getRandomPerm(elite));
     }
 
+    // Declare variables outside of loops for slight efficiency gains
+    double tempCost;
+    int randomMutation;
+
     while (generationsToRun > 0) {
         for (auto& perm : currentGeneration) {
-            if (fitnessCache.find(perm) == fitnessCache.end()) {
+            if (fitnessCache.find(perm) == fitnessCache.end()) { // Checks for previously checked permutation
                 tempCost = getFitness(perm);
-                fitnessCache[perm] = tempCost;
+                fitnessCache[perm] = tempCost; // Memoizes permutation when not already added
                 if (tempCost < geneticCost) {
                     geneticCost = tempCost;
                     elite = perm;
@@ -67,6 +75,7 @@ void MinDistanceController::calculateCostGenetic() {
             }
         }
 
+        // Produce next generation
         for (auto& perm : currentGeneration) {
             randomMutation = rand() % 100;
             if (randomMutation < percentageMutations) {
@@ -79,6 +88,7 @@ void MinDistanceController::calculateCostGenetic() {
         --generationsToRun;
     }
 
+    // Adds return to start to permutation
     elite.push_back(elite[0]);
 
     auto end_time = std::chrono::high_resolution_clock::now();

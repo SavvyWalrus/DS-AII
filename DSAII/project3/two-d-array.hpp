@@ -1,3 +1,11 @@
+/***************************************************************
+  Student Name: Sarah Wallis
+  File Name: two-d-array.hpp
+  Assignment number: Project 3
+
+  Template for a dynamic 2d array for reusability in various projects
+  Used here for the adjacency matrix for city connection weights
+***************************************************************/
 #ifndef TWO_D_ARRAY
 #define TWO_D_ARRAY
 #include <cstddef>
@@ -123,6 +131,5 @@ template <typename T>
 size_t TwoDArray<T>::getColCount() const {
     return cols;
 }
-
 
 #endif
