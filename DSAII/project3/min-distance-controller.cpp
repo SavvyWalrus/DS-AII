@@ -139,7 +139,10 @@ void MinDistanceController::displayResults() {
 }
 
 void MinDistanceController::runCalculations() {
+    std::cout << "Running brute force algorithm..." << std::endl;
     calculateCostBruteForce();
+    std::cout << "Brute force algorithm finished. Running Genetic Algorithm..." << std::endl;
     calculateCostGenetic();
+    std::cout << "Genetic algorithm finished. Displaying results..." << std::endl;
     displayResults();
 }
