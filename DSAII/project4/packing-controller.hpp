@@ -5,7 +5,7 @@ class PackingController {
     private:
         struct {
             const int OPTIMAL_FIT = 0;
-            const int ONLINE_FIRST = 1;
+            const int ONLINE_FIRST_FIT = 1;
             const int ONLINE_NEXT_FIT = 2;
             const int ONLINE_BEST_FIT = 3;
             const int OFFLINE_FIRST_FIT = 4;
@@ -15,15 +15,15 @@ class PackingController {
         std::vector<BinContainer> binContainers;
         std::vector<double> items;
         double maxBinCapacity;
-        void swap(int p, int q, std::vector<double>& s);
-        void incrementPermutation(std::vector<double>& s);
-        int computeFactorial(int num);
+        void insertionSort(std::vector<double>& s);
+        void swap(int p, int q, std::vector<int>& s);
+        void incrementPermutation(std::vector<int>& s);
+        void printS(std::vector<double>& s);
+        size_t computeFactorial(size_t num);
         void computeOptimalFit();
-        void computeOnlineFirstFit();
-        void computeOnlineNextFit();
-        void computeOnlineBestFit();
-        void computeOfflineFirstFit();
-        void computeOfflineBestFit();
+        void computeFirstFit(int algoType, std::vector<double> itemsList);
+        void computeNextFit(int algoType, std::vector<double> itemsList);
+        void computeBestFit(int algoType, std::vector<double> itemsList);
     public:
         PackingController(std::vector<double> items, double maxBinCapacity);
         void runPackingSimulations();

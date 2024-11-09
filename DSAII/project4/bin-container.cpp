@@ -1,35 +1,32 @@
 #include "./bin-container.hpp"
-#include <cmath>
 #include <string>
 #include <iostream>
 
 BinContainer::BinContainer() {
-    binCount = INFINITY;
     maxBinCapacity = -1;
 }
 
 BinContainer::BinContainer(int maxBinCapacity) {
-    binCount = 0;
     this->maxBinCapacity = maxBinCapacity;
 }
 
 int BinContainer::getBinCount() {
-    return binCount;
+    return bins.size();
 }
 
-Bin BinContainer::getBinAt(int index) {
-    return bins.at(index);
+Bin& BinContainer::getBinAt(size_t index) {
+    if (bins.size() == index) addNewEmptyBin();
+    return bins.at(index); // Breaks if index is 2 or more greater than bins.size() ; This is intentional behavior
 }
 
-Bin BinContainer::getLastBin() {
+Bin& BinContainer::getLastBin() {
     if (bins.size() == 0) addNewEmptyBin();
-    return bins.at(bins.size() - 1);
+    return bins.back();
 }
 
 void BinContainer::addNewEmptyBin() {
     Bin newBin = Bin(maxBinCapacity);
     bins.push_back(newBin);
-    ++binCount;
 }
 
 void BinContainer::print() {
@@ -39,12 +36,10 @@ void BinContainer::print() {
         for (auto item : bins.at(i).getItems()) {
             result += (std::to_string(item) + " ");
         }
-        result += "\n";
         std::cout << result << std::endl;
     }
 }
 
 void BinContainer::clear() {
     bins.clear();
-    binCount = 0;
 }

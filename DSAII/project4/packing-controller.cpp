@@ -1,5 +1,7 @@
 #include "./packing-controller.hpp"
-#include <string>
+#include <cstddef>
+#include <iomanip>
+#include <ios>
 #include <vector>
 #include <iostream>
 
@@ -9,21 +11,38 @@ PackingController::PackingController(std::vector<double> items, double maxBinCap
     binContainers = std::vector<BinContainer>(NUMBER_OF_TYPES);
 }
 
-void PackingController::swap(int p, int q, std::vector<double>& s) {
+void PackingController::insertionSort(std::vector<double>& s) {
+    size_t size = s.size();
+
+    for (size_t i = 1; i < size; ++i) {
+        double key = s.at(i);
+        int j = i - 1;
+
+        while (j >= 0 && s.at(j) < key) {
+            s.at(j+1) = s.at(j);
+            --j;
+        }
+        s.at(j+1) = key;
+    }
+}
+
+// Swaps items in place
+void PackingController::swap(int p, int q, std::vector<int>& s) {
     int temp = s[p];
     s[p] = s[q];
     s[q] = temp;
 }
 
-void PackingController::incrementPermutation(std::vector<double>& s) {
+// Renamed perm1() method
+void PackingController::incrementPermutation(std::vector<int>& s) {
     int m, k, p , q;
 
-    m = items.size()-2;
+    m = s.size()-2;
     while(s[m]>s[m+1]) {
         m = m - 1;
     }
 
-    k = items.size()-1;
+    k = s.size()-1;
     while(s[m] > s[k]) {
         k = k - 1;
     }
@@ -31,17 +50,24 @@ void PackingController::incrementPermutation(std::vector<double>& s) {
     swap(m, k, s);
     
     p = m + 1;
-    q = items.size() - 1;
+    q = s.size() - 1;
     while( p < q) {
         swap(p, q, s);
         ++p;
         --q;
     }
-
-    // printS(s);
 }
 
-int PackingController::computeFactorial(int num) {
+// Prints vector entries in order
+void PackingController::printS(std::vector<double>& s) {
+    for (size_t i = 0; i < s.size() - 1; ++i) {
+        std::cout << s[i] << " -> ";
+    }
+    std::cout << s[s.size() - 1] << std::endl;
+}
+
+// Recursive factorial function
+size_t PackingController::computeFactorial(size_t num) {
     if (num <= 1) {
         return 1;
     } else {
@@ -51,11 +77,21 @@ int PackingController::computeFactorial(int num) {
 
 void PackingController::computeOptimalFit() {
     std::vector<double> itemPerm = items;
-    int numPermutations = computeFactorial(itemPerm.size());
+    std::vector<int> indeces;
+    size_t numPermutations = computeFactorial(itemPerm.size() - 1); // No need to check different first item, thus minus 1
+    int numOfItems = itemPerm.size();
+    binContainers.at(OPTIMAL_FIT) = BinContainer(maxBinCapacity); // Initializes the container with parameter so comparisons don't break
 
-    for (int i = 0; i < numPermutations; ++i) {
+    // Store a list of int indeces for permutation swapping
+    for (int i = 0; i < numOfItems; ++i) {
+        indeces.push_back(i);
+    }
+
+    // Computes next fit for current permutation
+    for (size_t i = 1; i < numPermutations; ++i) {
         BinContainer container = BinContainer(maxBinCapacity);
 
+        // Inserts each item into a bin
         for (auto item : itemPerm) {
             if (container.getLastBin().tryAddItem(item)) {
                 continue;
@@ -65,41 +101,128 @@ void PackingController::computeOptimalFit() {
             }
         }
 
-        if (container.getBinCount() < binContainers.at(OPTIMAL_FIT).getBinCount()) {
+        // Checks for new optimal bin count
+        if (container.getBinCount() < binContainers.at(OPTIMAL_FIT).getBinCount() || binContainers.at(OPTIMAL_FIT).getBinCount() == 0) {
             binContainers.at(OPTIMAL_FIT) = container;
         }
 
-        incrementPermutation(itemPerm);
+        // Increments the permutation of int indeces
+        incrementPermutation(indeces);
 
-        std::cout << "TEST: " << binContainers.at(OPTIMAL_FIT).getBinAt(0).getItems().size() << std::endl;
+        // Uses the new indeces permutation to permute itemPerm
+        for (int j = 0; j < numOfItems; ++j) {
+            itemPerm.at(j) = items.at(indeces.at(j));
+        }
+
+        // printS(itemPerm);
     }
 }
 
-void PackingController::computeOnlineFirstFit() {
+void PackingController::computeFirstFit(int algoType, std::vector<double> itemsList) {
+    BinContainer container = BinContainer(maxBinCapacity);
 
+    for (auto item : itemsList) {
+        for (int i = 0; i <= container.getBinCount(); ++i) {
+            if (container.getBinAt(i).tryAddItem(item)) break;
+        }
+    }
+
+    binContainers.at(algoType) = container;
 }
 
-void PackingController::computeOnlineNextFit() {
+void PackingController::computeNextFit(int algoType, std::vector<double> itemsList) {
+    BinContainer container = BinContainer(maxBinCapacity);
 
+    for (auto item : itemsList) {
+        if (container.getLastBin().tryAddItem(item)) {
+            continue;
+        } else {
+            container.addNewEmptyBin();
+            container.getLastBin().tryAddItem(item);
+        }
+    }
+
+    binContainers.at(algoType) = container;
 }
 
-void PackingController::computeOnlineBestFit() {
+void PackingController::computeBestFit(int algoType, std::vector<double> itemsList) {
+    BinContainer container = BinContainer(maxBinCapacity);
+    double bestFitFullness;
+    double currFitFullness;
+    int bestBinIndex;
+    int binCount;
 
-}
+    for (auto item : itemsList) {
+        binCount = container.getBinCount();
 
-void PackingController::computeOfflineFirstFit() {
+        if (binCount == 0) {
+            container.getLastBin().tryAddItem(item);
+            continue;
+        }
 
-}
+        bestFitFullness = 0;
+        bestBinIndex = binCount;
 
-void PackingController::computeOfflineBestFit() {
+        for (int i = 0; i < binCount; ++i) {
+            currFitFullness = container.getBinAt(i).getFillAmount() + item;
+            if (currFitFullness <= 1 && currFitFullness > bestFitFullness) {
+                bestFitFullness = currFitFullness;
+                bestBinIndex = i;
+            }
+        }
 
+        container.getBinAt(bestBinIndex).tryAddItem(item);
+    }
+
+    binContainers.at(algoType) = container;
 }
 
 void PackingController::runPackingSimulations() {
-    computeOptimalFit();
+    std::vector<double> itemsSorted = items;
+    insertionSort(itemsSorted);
+
+    // computeOptimalFit();
+    computeFirstFit(ONLINE_FIRST_FIT, items);
+    computeNextFit(ONLINE_NEXT_FIT, items);
+    computeBestFit(ONLINE_BEST_FIT, items);
+    computeFirstFit(OFFLINE_FIRST_FIT, itemsSorted);
+    computeBestFit(OFFLINE_BEST_FIT, itemsSorted);
 }
 
 void PackingController::print() {
-    std::cout << "Optimal:" << binContainers.at(OPTIMAL_FIT).getBinCount() << std::endl;
+    // Outputs results table
+    std::cout << std::setw(37) << std::setfill('-') << "" << std::endl << std::setfill(' ');
+    std::cout << std::setw(37) << std::left << "|      Policy     | Total Bins Used |" << std::endl;
+    std::cout << std::setw(37) << std::setw(37) << std::setfill('-') << "" << std::endl << std::setfill(' ');
+    std::cout << std::left << "|Optimal Solution |" << std::right << std::setw(7) << binContainers.at(OPTIMAL_FIT).getBinCount() << " bins     |" << std::endl;
+    std::cout << std::setw(37) << std::setw(37) << std::setfill('-') << "" << std::endl << std::setfill(' ');
+    std::cout << std::left << "|Online Algorithm |" << std::right << std::setw(18) << "|" << std::endl;
+    std::cout << std::setw(37) << std::setw(37) << std::setfill('-') << "" << std::endl << std::setfill(' ');
+    std::cout << std::left << "|  First Fit      |" << std::right << std::setw(7) << binContainers.at(ONLINE_FIRST_FIT).getBinCount() << " bins     |" << std::endl;
+    std::cout << std::setw(37) << std::setw(37) << std::setfill('-') << "" << std::endl << std::setfill(' ');
+    std::cout << std::left << "|  Next Fit       |" << std::right << std::setw(7) << binContainers.at(ONLINE_NEXT_FIT).getBinCount() << " bins     |" << std::endl;
+    std::cout << std::setw(37) << std::setw(37) << std::setfill('-') << "" << std::endl << std::setfill(' ');
+    std::cout << std::left << "|  Best Fit       |" << std::right << std::setw(7) << binContainers.at(ONLINE_BEST_FIT).getBinCount() << " bins     |" << std::endl;
+    std::cout << std::setw(37) << std::setw(37) << std::setfill('-') << "" << std::endl << std::setfill(' ');
+    std::cout << std::left << "|Offline Algorithm|" << std::right << std::setw(18) << "|" << std::endl;
+    std::cout << std::setw(37) << std::setw(37) << std::setfill('-') << "" << std::endl << std::setfill(' ');
+    std::cout << std::left << "|  First Fit      |" << std::right << std::setw(7) << binContainers.at(OFFLINE_FIRST_FIT).getBinCount() << " bins     |" << std::endl;
+    std::cout << std::setw(37) << std::setw(37) << std::setfill('-') << "" << std::endl << std::setfill(' ');
+    std::cout << std::left << "|  Best Fit       |" << std::right << std::setw(7) << binContainers.at(OFFLINE_BEST_FIT).getBinCount() << " bins     |" << std::endl;
+    std::cout << std::setw(37) << std::setw(37) << std::setfill('-') << "" << std::endl << std::setfill(' ');
+    std::cout << std::endl;
+
+    // Outputs the packing of each method's bin container
+    std::cout << "Optimal: " << std::endl;
     binContainers.at(OPTIMAL_FIT).print();
+    std::cout << "Online First Fit: " << std::endl;
+    binContainers.at(ONLINE_FIRST_FIT).print();
+    std::cout << "Online Next Fit: " << std::endl;
+    binContainers.at(ONLINE_NEXT_FIT).print();
+    std::cout << "Online Best Fit: " << std::endl;
+    binContainers.at(ONLINE_BEST_FIT).print();
+    std::cout << "Offline First Fit: " << std::endl;
+    binContainers.at(OFFLINE_FIRST_FIT).print();
+    std::cout << "Offline Best Fit: " << std::endl;
+    binContainers.at(OFFLINE_BEST_FIT).print();
 }
