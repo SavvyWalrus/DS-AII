@@ -1,3 +1,10 @@
+/***************************************************************
+  Student Name: Sarah Wallis
+  File Name: main.cpp
+  Assignment number: Project 4
+
+  Main function for running program
+***************************************************************/
 #include <iostream>
 #include <fstream>
 #include <vector>

@@ -1,3 +1,10 @@
+/***************************************************************
+  Student Name: Sarah Wallis
+  File Name: bin-container.hpp
+  Assignment number: Project 4
+
+  Class for managing bin containers
+***************************************************************/
 #include "./bin.hpp"
 #include <cstddef>
 #include <vector>
@@ -9,10 +16,10 @@ class BinContainer {
     public:
         BinContainer();
         BinContainer(int maxBinCapacity);
-        int getBinCount();
-        Bin& getBinAt(size_t index);
-        Bin& getLastBin();
+        int getBinCount(); // Returns the current size of the bins vector
+        Bin& getBinAt(size_t index); // Returns a reference to the bin at index ; Adds a new bin and returns that if the index is out of range
+        Bin& getLastBin(); // Returns a reference to the last bin ; Adds a new empty bin if size is zero and returns it
         void addNewEmptyBin();
-        void print();
-        void clear();
+        void print(); // Prints the contents of each bin
+        void clear(); // Empties the bins
 };

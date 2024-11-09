@@ -1,3 +1,10 @@
+/***************************************************************
+  Student Name: Sarah Wallis
+  File Name: packing-controller.cpp
+  Assignment number: Project 4
+
+  Class for managing bin packing algorithms
+***************************************************************/
 #include "./packing-controller.hpp"
 #include <cstddef>
 #include <iomanip>
@@ -11,6 +18,7 @@ PackingController::PackingController(std::vector<double> items, double maxBinCap
     binContainers = std::vector<BinContainer>(NUMBER_OF_TYPES);
 }
 
+// Straightforward insertion sort for sorting from largest to smallest
 void PackingController::insertionSort(std::vector<double>& s) {
     size_t size = s.size();
 
@@ -51,14 +59,14 @@ void PackingController::incrementPermutation(std::vector<int>& s) {
     
     p = m + 1;
     q = s.size() - 1;
-    while( p < q) {
+    while(p < q) {
         swap(p, q, s);
         ++p;
         --q;
     }
 }
 
-// Prints vector entries in order
+// Prints double vector entries in order
 void PackingController::printS(std::vector<double>& s) {
     for (size_t i = 0; i < s.size() - 1; ++i) {
         std::cout << s[i] << " -> ";
@@ -76,22 +84,23 @@ size_t PackingController::computeFactorial(size_t num) {
 }
 
 void PackingController::computeOptimalFit() {
-    std::vector<double> itemPerm = items;
-    std::vector<int> indeces;
+    std::vector<double> itemPerm = items; // Creates a copy to avoid altering the original items vector
+    std::vector<int> indeces; // A vector for storing index representations for permutations ; Needed since given algorithm fails with doubles for some reason
     size_t numPermutations = computeFactorial(itemPerm.size() - 1); // No need to check different first item, thus minus 1
     int numOfItems = itemPerm.size();
-    binContainers.at(OPTIMAL_FIT) = BinContainer(maxBinCapacity); // Initializes the container with parameter so comparisons don't break
+    int bestBinCount = 0;
+    binContainers.at(OPTIMAL_FIT) = BinContainer(maxBinCapacity); // Initializes the container with a parameter so comparisons don't break
 
     // Store a list of int indeces for permutation swapping
     for (int i = 0; i < numOfItems; ++i) {
         indeces.push_back(i);
     }
 
-    // Computes next fit for current permutation
+    // Computes next fit for each permutation
     for (size_t i = 1; i < numPermutations; ++i) {
         BinContainer container = BinContainer(maxBinCapacity);
 
-        // Inserts each item into a bin
+        // Inserts each item into a bin using next fit
         for (auto item : itemPerm) {
             if (container.getLastBin().tryAddItem(item)) {
                 continue;
@@ -102,8 +111,9 @@ void PackingController::computeOptimalFit() {
         }
 
         // Checks for new optimal bin count
-        if (container.getBinCount() < binContainers.at(OPTIMAL_FIT).getBinCount() || binContainers.at(OPTIMAL_FIT).getBinCount() == 0) {
+        if (container.getBinCount() < bestBinCount || bestBinCount == 0) {
             binContainers.at(OPTIMAL_FIT) = container;
+            bestBinCount = binContainers.at(OPTIMAL_FIT).getBinCount();
         }
 
         // Increments the permutation of int indeces
@@ -113,8 +123,6 @@ void PackingController::computeOptimalFit() {
         for (int j = 0; j < numOfItems; ++j) {
             itemPerm.at(j) = items.at(indeces.at(j));
         }
-
-        // printS(itemPerm);
     }
 }
 
@@ -163,6 +171,7 @@ void PackingController::computeBestFit(int algoType, std::vector<double> itemsLi
         bestFitFullness = 0;
         bestBinIndex = binCount;
 
+        // Finds the best fit for the current item
         for (int i = 0; i < binCount; ++i) {
             currFitFullness = container.getBinAt(i).getFillAmount() + item;
             if (currFitFullness <= 1 && currFitFullness > bestFitFullness) {
@@ -171,6 +180,8 @@ void PackingController::computeBestFit(int algoType, std::vector<double> itemsLi
             }
         }
 
+        // Inserts the item at the found best bin index
+        // If no fit is found, a new bin will be added--triggered by bestBinIndex being equal to binCount
         container.getBinAt(bestBinIndex).tryAddItem(item);
     }
 
@@ -181,7 +192,7 @@ void PackingController::runPackingSimulations() {
     std::vector<double> itemsSorted = items;
     insertionSort(itemsSorted);
 
-    // computeOptimalFit();
+    computeOptimalFit();
     computeFirstFit(ONLINE_FIRST_FIT, items);
     computeNextFit(ONLINE_NEXT_FIT, items);
     computeBestFit(ONLINE_BEST_FIT, items);

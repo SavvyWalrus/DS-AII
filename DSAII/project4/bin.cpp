@@ -1,3 +1,10 @@
+/***************************************************************
+  Student Name: Sarah Wallis
+  File Name: bin.cpp
+  Assignment number: Project 4
+
+  Class for managing bins
+***************************************************************/
 #include "./bin.hpp"
 
 Bin::Bin(double maxBinCapacity) {
@@ -17,7 +24,7 @@ double Bin::getFillAmount() {
     return this->fillAmount;
 }
 
-std::vector<double> Bin::getItems() {
+std::vector<double>& Bin::getItems() {
     return items;
 }
 

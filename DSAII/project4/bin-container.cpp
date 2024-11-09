@@ -1,5 +1,12 @@
+/***************************************************************
+  Student Name: Sarah Wallis
+  File Name: bin-container.cpp
+  Assignment number: Project 4
+
+  Class for managing bin containers
+***************************************************************/
 #include "./bin-container.hpp"
-#include <string>
+#include <iomanip>
 #include <iostream>
 
 BinContainer::BinContainer() {
@@ -15,11 +22,17 @@ int BinContainer::getBinCount() {
 }
 
 Bin& BinContainer::getBinAt(size_t index) {
-    if (bins.size() == index) addNewEmptyBin();
-    return bins.at(index); // Breaks if index is 2 or more greater than bins.size() ; This is intentional behavior
+    // Returns new empty bin as failsafe
+    if (bins.size() <= index) {
+        addNewEmptyBin();
+        return bins.back();
+    } else {
+        return bins.at(index);
+    }
 }
 
 Bin& BinContainer::getLastBin() {
+    // Initializes new bin if none present
     if (bins.size() == 0) addNewEmptyBin();
     return bins.back();
 }
@@ -31,12 +44,11 @@ void BinContainer::addNewEmptyBin() {
 
 void BinContainer::print() {
     for (size_t i = 0; i < bins.size(); ++i) {
-        std::string result = "";
-        result += ("  b" + std::to_string(i+1) + ": ");
+        std::cout << "  b" << i+1 << ": " << std::setprecision(3) << std::fixed; // Assumes no item more precise than three decimal places
         for (auto item : bins.at(i).getItems()) {
-            result += (std::to_string(item) + " ");
+            std::cout << item << " ";
         }
-        std::cout << result << std::endl;
+        std::cout << std::endl;
     }
 }
 
