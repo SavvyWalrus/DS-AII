@@ -11,19 +11,21 @@
 
 BinContainer::BinContainer() {
     maxBinCapacity = -1;
+    binCount = 0;
 }
 
 BinContainer::BinContainer(int maxBinCapacity) {
     this->maxBinCapacity = maxBinCapacity;
+    binCount = 0;
 }
 
 int BinContainer::getBinCount() {
-    return bins.size();
+    return binCount;
 }
 
 Bin& BinContainer::getBinAt(size_t index) {
     // Returns new empty bin as failsafe
-    if (bins.size() <= index) {
+    if (binCount <= index) {
         addNewEmptyBin();
         return bins.back();
     } else {
@@ -33,13 +35,21 @@ Bin& BinContainer::getBinAt(size_t index) {
 
 Bin& BinContainer::getLastBin() {
     // Initializes new bin if none present
-    if (bins.size() == 0) addNewEmptyBin();
-    return bins.back();
+    if (binCount == 0 && bins.size() == 0) {
+        addNewEmptyBin();
+    }
+    return bins.at(binCount - 1);
 }
 
 void BinContainer::addNewEmptyBin() {
-    Bin newBin = Bin(maxBinCapacity);
-    bins.push_back(newBin);
+    if (bins.size() <= binCount) {
+        Bin newBin = Bin(maxBinCapacity);
+        bins.push_back(newBin);
+    } else {
+        bins.at(binCount).clear();
+    }
+
+    ++binCount;
 }
 
 void BinContainer::print() {
@@ -53,5 +63,9 @@ void BinContainer::print() {
 }
 
 void BinContainer::clear() {
-    bins.clear();
+    int numBins = getBinCount();
+
+    for (int i = 0; i < numBins; ++i) {
+        bins.at(i).clear();
+    }
 }

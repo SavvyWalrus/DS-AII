@@ -11,6 +11,7 @@
 #include <ios>
 #include <vector>
 #include <iostream>
+#include <chrono>
 
 PackingController::PackingController(std::vector<double> items, double maxBinCapacity) {
     this->items = items;
@@ -84,10 +85,11 @@ size_t PackingController::computeFactorial(size_t num) {
 }
 
 void PackingController::computeOptimalFit() {
-    std::vector<double> itemPerm = items; // Creates a copy to avoid altering the original items vector
+    std::cout << "Starting optimal packing algorithm..." << std::endl;
+    auto start_time = std::chrono::high_resolution_clock::now();
     std::vector<int> indeces; // A vector for storing index representations for permutations ; Needed since given algorithm fails with doubles for some reason
-    size_t numPermutations = computeFactorial(itemPerm.size() - 1); // No need to check different first item, thus minus 1
-    int numOfItems = itemPerm.size();
+    size_t numPermutations = computeFactorial(items.size() - 2); // No need to check different first item, thus minus 1
+    int numOfItems = items.size();
     int bestBinCount = 0;
     binContainers.at(OPTIMAL_FIT) = BinContainer(maxBinCapacity); // Initializes the container with a parameter so comparisons don't break
 
@@ -96,17 +98,19 @@ void PackingController::computeOptimalFit() {
         indeces.push_back(i);
     }
 
+    
+    std::cout << "Permutations to calculate: " << numPermutations << "\nThis may take a while..." << std::endl;
+
     // Computes next fit for each permutation
     for (size_t i = 1; i < numPermutations; ++i) {
         BinContainer container = BinContainer(maxBinCapacity);
-
         // Inserts each item into a bin using next fit
-        for (auto item : itemPerm) {
-            if (container.getLastBin().tryAddItem(item)) {
+        for (int j = 0; j < numOfItems; ++j) {
+            if (container.getLastBin().tryAddItem(items.at(indeces.at(j)))) {
                 continue;
             } else {
                 container.addNewEmptyBin();
-                container.getLastBin().tryAddItem(item);
+                container.getLastBin().tryAddItem(items.at(indeces.at(j)));
             }
         }
 
@@ -119,11 +123,14 @@ void PackingController::computeOptimalFit() {
         // Increments the permutation of int indeces
         incrementPermutation(indeces);
 
-        // Uses the new indeces permutation to permute itemPerm
-        for (int j = 0; j < numOfItems; ++j) {
-            itemPerm.at(j) = items.at(indeces.at(j));
+        if (i % 10000 == 0) {
+            std::cout << "Permutation " << i << "..." << std::endl;
         }
     }
+
+    auto end_time = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> totalTime = end_time - start_time;
+    std::cout << "Algorithm finished\nTotal elapsed time: " << totalTime.count() << "s" << std::endl;
 }
 
 void PackingController::computeFirstFit(int algoType, std::vector<double> itemsList) {

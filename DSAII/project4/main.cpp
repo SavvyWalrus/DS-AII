@@ -17,8 +17,10 @@ int main() {
     std::vector<double> myItems;
 
     double item;
-    buffer >> item;
-    while (buffer >> item) {
+    int numItems;
+    buffer >> numItems;
+    for (int i = 0; i < numItems; ++i) {
+        buffer >> item;
         myItems.push_back(item);
     }
 

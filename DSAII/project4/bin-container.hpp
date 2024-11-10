@@ -13,6 +13,7 @@ class BinContainer {
     private:
         std::vector<Bin> bins;
         int maxBinCapacity;
+        size_t binCount;
     public:
         BinContainer();
         BinContainer(int maxBinCapacity);
