@@ -8,14 +8,9 @@
 #include "./bin-container.hpp"
 #include <iomanip>
 #include <iostream>
+#include <vector>
 
 BinContainer::BinContainer() {
-    maxBinCapacity = -1;
-    binCount = 0;
-}
-
-BinContainer::BinContainer(int maxBinCapacity) {
-    this->maxBinCapacity = maxBinCapacity;
     binCount = 0;
 }
 
@@ -23,39 +18,56 @@ int BinContainer::getBinCount() {
     return binCount;
 }
 
-Bin& BinContainer::getBinAt(size_t index) {
+Bin& BinContainer::getBinAt(int index) {
     // Returns new empty bin as failsafe
     if (binCount <= index) {
         addNewEmptyBin();
-        return bins.back();
+        return bins[binCount - 1];
     } else {
-        return bins.at(index);
+        return bins[index];
     }
 }
 
 Bin& BinContainer::getLastBin() {
     // Initializes new bin if none present
-    if (binCount == 0 && bins.size() == 0) {
-        addNewEmptyBin();
-    }
-    return bins.at(binCount - 1);
+    if (binCount == 0) addNewEmptyBin();
+    return bins[binCount - 1];
 }
 
 void BinContainer::addNewEmptyBin() {
-    if (bins.size() <= binCount) {
-        Bin newBin = Bin(maxBinCapacity);
-        bins.push_back(newBin);
-    } else {
-        bins.at(binCount).clear();
-    }
-
+    bins[binCount].clear();
     ++binCount;
 }
 
+void BinContainer::addNewItemByNextFit(double item) {
+    if (!getLastBin().tryAddItem(item)) {
+        addNewEmptyBin();
+        getLastBin().tryAddItem(item);
+    }
+}
+
+void BinContainer::addNewItemByFirstFit(double item) {
+    bool added = false;
+
+    for (int i = 0; i <= binCount; ++i) {
+        if (getBinAt(i).tryAddItem(item)) {
+            added = true;
+            break;
+        }
+    }
+
+    if (!added) {
+        addNewItemByNextFit(item);
+    } else {
+        added = false;
+    }
+}
+
 void BinContainer::print() {
-    for (size_t i = 0; i < bins.size(); ++i) {
+    for (int i = 0; i < binCount; ++i) {
+        std::vector<double> items = bins[i].getItems();
         std::cout << "  b" << i+1 << ": " << std::setprecision(3) << std::fixed; // Assumes no item more precise than three decimal places
-        for (auto item : bins.at(i).getItems()) {
+        for (auto item : items) {
             std::cout << item << " ";
         }
         std::cout << std::endl;
@@ -63,9 +75,5 @@ void BinContainer::print() {
 }
 
 void BinContainer::clear() {
-    int numBins = getBinCount();
-
-    for (int i = 0; i < numBins; ++i) {
-        bins.at(i).clear();
-    }
+    binCount = 0;
 }

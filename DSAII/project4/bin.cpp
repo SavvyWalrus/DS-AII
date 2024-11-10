@@ -8,14 +8,13 @@
 #include "./bin.hpp"
 #include <vector>
 
-Bin::Bin(double maxBinCapacity) {
-    this->maxBinCapacity = maxBinCapacity;
+Bin::Bin() {
     fillAmount = 0;
     itemCount = 0;
 }
 
 double Bin::getCapacity() {
-    return this->maxBinCapacity;
+    return MAX_BIN_CAPACITY;
 }
 
 void Bin::setFillAmount(double size) {
@@ -28,7 +27,7 @@ double Bin::getFillAmount() {
 
 std::vector<double> Bin::getItems() {
     std::vector<double> temp;
-    for (size_t i = 0; i < itemCount; ++i) {
+    for (int i = 0; i < itemCount; ++i) {
         temp.push_back(items[i]);
     }
 
@@ -36,7 +35,7 @@ std::vector<double> Bin::getItems() {
 }
 
 bool Bin::tryAddItem(double item) {
-    if (fillAmount + item <= maxBinCapacity) {
+    if (fillAmount + item <= MAX_BIN_CAPACITY) {
         fillAmount += item;
         items[itemCount] = item;
         ++itemCount;

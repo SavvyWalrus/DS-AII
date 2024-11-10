@@ -6,21 +6,20 @@
   Class for managing bin containers
 ***************************************************************/
 #include "./bin.hpp"
-#include <cstddef>
-#include <vector>
+#include "./constants.hpp"
 
 class BinContainer {
     private:
-        std::vector<Bin> bins;
-        int maxBinCapacity;
-        size_t binCount;
+        Bin bins[MAX_NUM_BINS];
+        int binCount;
     public:
         BinContainer();
-        BinContainer(int maxBinCapacity);
         int getBinCount(); // Returns the current size of the bins vector
-        Bin& getBinAt(size_t index); // Returns a reference to the bin at index ; Adds a new bin and returns that if the index is out of range
+        Bin& getBinAt(int index); // Returns a reference to the bin at index ; Adds a new bin and returns that if the index is out of range
         Bin& getLastBin(); // Returns a reference to the last bin ; Adds a new empty bin if size is zero and returns it
         void addNewEmptyBin();
+        void addNewItemByNextFit(double item);
+        void addNewItemByFirstFit(double item);
         void print(); // Prints the contents of each bin
         void clear(); // Empties the bins
 };

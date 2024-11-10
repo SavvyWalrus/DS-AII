@@ -5,6 +5,7 @@
 
   Class for managing bin packing algorithms
 ***************************************************************/
+#include <cstddef>
 #include <vector>
 #include "./bin-container.hpp"
 
@@ -23,18 +24,17 @@ class PackingController {
         };
         std::vector<BinContainer> binContainers; // Stores the bin containers for each algorithm
         std::vector<double> items; // Stores the list of items for packing
-        double maxBinCapacity;
         void insertionSort(std::vector<double>& s); // Basic sorting algorithm for offline algorithms
-        void swap(int p, int q, std::vector<int>& s); // In place vector swap method
-        void incrementPermutation(std::vector<int>& s); // Increments int permutations in lexographical order
-        void printS(std::vector<double>& s); // Prints out a list of doubles in order
+        void swap(int p, int q, int s[]); // In place int swap method
+        void incrementPermutation(int s[], int size); // Increments int permutations in lexographical order
+        void printS(int s[], int size); // Prints out a list of int in current order
         size_t computeFactorial(size_t num); // Recursive factorial algorithm
         void computeOptimalFit(); // Brute force optimal fit algorithm
         void computeFirstFit(int algoType, std::vector<double> itemsList); // First fit bin packing algorithm
         void computeNextFit(int algoType, std::vector<double> itemsList); // Next fit bin packing algorithm
         void computeBestFit(int algoType, std::vector<double> itemsList); // Best fit bin packing algorithm
     public:
-        PackingController(std::vector<double> items, double maxBinCapacity);
+        PackingController(std::vector<double> items);
         void runPackingSimulations(); // Runs all algorithms
         void print(); // Prints results to console
 };

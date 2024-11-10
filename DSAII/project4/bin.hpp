@@ -5,21 +5,20 @@
 
   Class for managing bins
 ***************************************************************/
-#include <cstddef>
 #include <vector>
+#include "./constants.hpp"
 
 class Bin {
     private:
-        double maxBinCapacity;
         double fillAmount; // How full the bin currently is
-        double items[12]; // The items currently in the bin
+        double items[MAX_NUM_BINS]; // The items currently in the bin
         int itemCount;
     public:
-        Bin(double maxBinCapacity);
+        Bin();
         double getCapacity(); // Returns maxBinCapacity
         void setFillAmount(double size);
         double getFillAmount();
-        std::vector<double> getItems(); // Returns a reference to the items vector
+        std::vector<double> getItems(); // Returns a vector copy of the items array
         bool tryAddItem(double item); // Returns true or false depending on if the item was successfully added
         void clear();
 };

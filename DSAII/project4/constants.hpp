@@ -1,0 +1,3 @@
+#define MAX_BIN_CAPACITY 1
+#define MAX_NUM_BINS 15
+#define MAX_NUM_ITEMS 15
