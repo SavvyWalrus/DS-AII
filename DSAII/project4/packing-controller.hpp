@@ -26,7 +26,8 @@ class PackingController {
         std::vector<double> items; // Stores the list of items for packing
         void insertionSort(std::vector<double>& s); // Basic sorting algorithm for offline algorithms
         void swap(int p, int q, int s[]); // In place int swap method
-        void incrementPermutation(int s[], int size); // Increments int permutations in lexographical order
+        void incrementPermutation(int s[], int size); // Increments int permutations in lexicographical order
+        bool skipToNextPermutation(int arr[], int size, int indexToIncrement); // Skips all lexicographical permutations for indeces following indexPos
         void printS(int s[], int size); // Prints out a list of int in current order
         size_t computeFactorial(size_t num); // Recursive factorial algorithm
         void computeOptimalFit(); // Brute force optimal fit algorithm

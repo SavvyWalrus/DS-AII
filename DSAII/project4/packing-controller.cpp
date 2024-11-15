@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <ios>
 #include <vector>
+#include <algorithm>
 #include <iostream>
 #include <chrono>
 
@@ -68,6 +69,35 @@ void PackingController::incrementPermutation(int s[], int size) {
     // printS(s, size);
 }
 
+bool PackingController::skipToNextPermutation(int arr[], int size, int indexToIncrement) {
+    int suffixIndexToSwap = 0;
+    
+    while (true) {
+        for (int i = size - 1; i > indexToIncrement; --i) {
+            if (arr[i] > arr[indexToIncrement] && (!suffixIndexToSwap || arr[i] < arr[suffixIndexToSwap])) {
+                suffixIndexToSwap = i;
+                if (arr[suffixIndexToSwap] + 1 == arr[indexToIncrement]) break;
+            }
+        }
+
+        if (!suffixIndexToSwap) {
+            if (indexToIncrement == 0) {
+                return false;
+            } else {
+                --indexToIncrement;
+                continue;
+            }
+        }
+
+        break;
+    }
+
+    swap(indexToIncrement, suffixIndexToSwap, arr);
+    std::sort(arr + indexToIncrement + 1, arr + size);
+
+    return true;
+}
+
 // Prints int array entries in order
 void PackingController::printS(int s[], int size) {
     for (int i = 0; i < size - 1; ++i) {
@@ -86,38 +116,39 @@ size_t PackingController::computeFactorial(size_t num) {
 }
 
 void PackingController::computeOptimalFit() {
-    std::cout << "Starting optimal packing algorithm..." << std::endl;
-    auto start_time = std::chrono::high_resolution_clock::now();
     int indeces[MAX_NUM_BINS]; // An array for storing index representations for permutations ; Needed to avoid permutation failures on duplicate values
-    size_t numPermutations = computeFactorial(items.size()); // No need to check different first item, thus minus 1
     int numOfItems = items.size();
+    size_t numPermutations = computeFactorial(numOfItems); // No need to check different first item, thus minus 1
     int bestBinCount = MAX_NUM_BINS + 1;
     double currBinFill = 0;
     int currBinCount = 0;
     int bestPerm[numOfItems];
+
+    std::cout << "Starting optimal packing algorithm..." << std::endl;
+    auto start_time = std::chrono::high_resolution_clock::now();
 
     // Store a list of int indeces for permutation swapping
     for (int i = 0; i < numOfItems; ++i) {
         indeces[i] = i;
     }
 
-    int skipPermTriggerIndex = -1;
-    int skipPermTriggerValue = -1;
-    bool flag = false;
-    BinContainer container = BinContainer();
+    int skipPermTriggerIndex;
+    int skipPermTriggerValue;
+    bool skipFlag = false;
+    bool incrementFlag = false;
     std::cout << "Permutations to calculate: " << numPermutations << "\nThis may take a while..." << std::endl;
 
     // Computes next fit for each permutation
-    for (size_t i = 0; i < numPermutations - 1; ++i) {
-        if (flag) {
+    for (size_t i = 1; i < numPermutations; ++i) {
+        if (incrementFlag) {
             if (indeces[skipPermTriggerIndex] == skipPermTriggerValue) {
                 if (i % 10000000 == 0) {
-                    std::cout << "Packing permutation " << i << "..." << std::endl;
+                    std::cout << "Permutation " << i << "..." << std::endl;
                 }
-
+                incrementPermutation(indeces, numOfItems);
                 continue;
             } else {
-                flag = false;
+                incrementFlag = false;
             }
         }
 
@@ -127,9 +158,15 @@ void PackingController::computeOptimalFit() {
             if (currBinFill > MAX_BIN_CAPACITY) {
                 ++currBinCount;
                 if (currBinCount >= bestBinCount) {
-                    skipPermTriggerIndex = j;
-                    skipPermTriggerValue = indeces[j];
-                    flag = true;
+                    // Skips irrelevant permutations
+                    if (j < numOfItems - 3) { // Direct lexicographical skip branch ; Ideal offest for balanced efficiency is numOfItems - 3
+                        skipPermTriggerIndex = j - 1;
+                        skipFlag = true;
+                    } else { // Brute force incrementation skip branch
+                        skipPermTriggerIndex = j - 1;
+                        skipPermTriggerValue = indeces[j - 1];
+                        incrementFlag = true;
+                    }
                     break;
                 } else {
                     currBinFill = items[indeces[j]];
@@ -142,17 +179,28 @@ void PackingController::computeOptimalFit() {
             for (int i = 0; i < numOfItems; ++i) {
                 bestPerm[i] = indeces[i];
             }
+            bestBinCount = currBinCount;
         }
 
         currBinCount = 0;
         currBinFill = 0.0;
 
         if (i % 10000000 == 0) {
-            std::cout << "Packing permutation " << i << "..." << std::endl;
+            std::cout << "Permutation " << i << "..." << std::endl;
         }
 
-        incrementPermutation(indeces, numOfItems);
+        if (skipFlag) {
+            if (!skipToNextPermutation(indeces, numOfItems, skipPermTriggerIndex)) {
+                std::cout << "Break condition met. Subsequent Permutations skipped. Algorithm finishing..." << std::endl;
+                break;
+            }
+            skipFlag = false;
+        } else {
+            incrementPermutation(indeces, numOfItems);
+        }
     }
+
+    BinContainer container = BinContainer();
 
     for (int i = 0; i < numOfItems; ++i) {
         container.addNewItemByNextFit(items[bestPerm[i]]);
