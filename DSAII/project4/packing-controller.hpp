@@ -11,16 +11,16 @@
 
 class PackingController {
     private:
-        // Struct for containing references to constants
+        // Enum for containing references to constants
         // Used for index access in binContainers vector for improved readability
-        struct {
-            const int OPTIMAL_FIT = 0;
-            const int ONLINE_FIRST_FIT = 1;
-            const int ONLINE_NEXT_FIT = 2;
-            const int ONLINE_BEST_FIT = 3;
-            const int OFFLINE_FIRST_FIT = 4;
-            const int OFFLINE_BEST_FIT = 5;
-            const int NUMBER_OF_TYPES = 6;
+        enum {
+            OPTIMAL_FIT = 0,
+            ONLINE_FIRST_FIT = 1,
+            ONLINE_NEXT_FIT = 2,
+            ONLINE_BEST_FIT = 3,
+            OFFLINE_FIRST_FIT = 4,
+            OFFLINE_BEST_FIT = 5,
+            NUMBER_OF_TYPES = 6,
         };
         std::vector<BinContainer> binContainers; // Stores the bin containers for each algorithm
         std::vector<double> items; // Stores the list of items for packing

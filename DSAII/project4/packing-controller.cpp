@@ -89,41 +89,76 @@ void PackingController::computeOptimalFit() {
     std::cout << "Starting optimal packing algorithm..." << std::endl;
     auto start_time = std::chrono::high_resolution_clock::now();
     int indeces[MAX_NUM_BINS]; // An array for storing index representations for permutations ; Needed to avoid permutation failures on duplicate values
-    size_t numPermutations = computeFactorial(items.size() - 1); // No need to check different first item, thus minus 1
+    size_t numPermutations = computeFactorial(items.size()); // No need to check different first item, thus minus 1
     int numOfItems = items.size();
-    int bestBinCount = 0;
-    binContainers.at(OPTIMAL_FIT) = BinContainer();
+    int bestBinCount = MAX_NUM_BINS + 1;
+    double currBinFill = 0;
+    int currBinCount = 0;
+    int bestPerm[numOfItems];
 
     // Store a list of int indeces for permutation swapping
     for (int i = 0; i < numOfItems; ++i) {
         indeces[i] = i;
     }
 
+    int skipPermTriggerIndex = -1;
+    int skipPermTriggerValue = -1;
+    bool flag = false;
     BinContainer container = BinContainer();
     std::cout << "Permutations to calculate: " << numPermutations << "\nThis may take a while..." << std::endl;
 
     // Computes next fit for each permutation
-    for (size_t i = 1; i < numPermutations; ++i) {
+    for (size_t i = 0; i < numPermutations - 1; ++i) {
+        if (flag) {
+            if (indeces[skipPermTriggerIndex] == skipPermTriggerValue) {
+                if (i % 10000000 == 0) {
+                    std::cout << "Packing permutation " << i << "..." << std::endl;
+                }
+
+                continue;
+            } else {
+                flag = false;
+            }
+        }
+
         // Inserts each item into a bin using next fit
         for (int j = 0; j < numOfItems; ++j) {
-            container.addNewItemByNextFit(items[indeces[j]]);
+            currBinFill += items[indeces[j]];
+            if (currBinFill > MAX_BIN_CAPACITY) {
+                ++currBinCount;
+                if (currBinCount >= bestBinCount) {
+                    skipPermTriggerIndex = j;
+                    skipPermTriggerValue = indeces[j];
+                    flag = true;
+                    break;
+                } else {
+                    currBinFill = items[indeces[j]];
+                }
+            }
         }
 
         // Checks for new optimal bin count
-        if (container.getBinCount() < bestBinCount || bestBinCount == 0) {
-            binContainers.at(OPTIMAL_FIT) = container;
-            bestBinCount = binContainers.at(OPTIMAL_FIT).getBinCount();
+        if (currBinCount < bestBinCount) {
+            for (int i = 0; i < numOfItems; ++i) {
+                bestPerm[i] = indeces[i];
+            }
         }
 
-        container.clear();
-
-        // Increments the permutation of int indeces
-        incrementPermutation(indeces, numOfItems);
+        currBinCount = 0;
+        currBinFill = 0.0;
 
         if (i % 10000000 == 0) {
-            std::cout << "Permutation " << i << "..." << std::endl;
+            std::cout << "Packing permutation " << i << "..." << std::endl;
         }
+
+        incrementPermutation(indeces, numOfItems);
     }
+
+    for (int i = 0; i < numOfItems; ++i) {
+        container.addNewItemByNextFit(items[bestPerm[i]]);
+    }
+
+    binContainers.at(OPTIMAL_FIT) = container;
 
     auto end_time = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> totalTime = end_time - start_time;
