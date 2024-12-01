@@ -4,6 +4,8 @@
 # Ignore all zip files
 *.zip
 
+.vscode
+
 # Ignore executable files
 sim
 main
